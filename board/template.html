@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{{PROJECT}} — board</title>
+
+<!-- turystack:howto
+     ─────────────────────────────────────────────────────────────────────
+     HOW TO START THIS BOARD
+
+     1. The board's state is `tasks.json`, beside this file. This page is a
+        render of it: the `#board` payload below is written from `tasks.json`
+        in the same step that changes it, never edited by hand (SPC-16).
+
+     2. Derive the tasks from the filled sections of this skill. That step is
+        `turystack-harness` › `05-board.md`; ask for it with:
+
+            "deriva o board a partir da spec"
+
+     3. Every task names the ids it satisfies in `covers` (SPC-17), and a task
+        is `done` only once its delivery report is attached to it (SPC-18).
+
+     4. When the board has its first tasks, remove this comment — it is
+        instructions for an empty board, and an empty board is what it stops
+        describing:
+
+            npx @turystack/proof-mode-gates howto --strip .claude/skills/<project>-spec
+
+        That strips every `turystack:howto` block from this skill, this page
+        included. Run it per skill, once you have started it.
+     ───────────────────────────────────────────────────────────────────── -->
+
+<style>
+  /* Tokens mirror the delivery report's, so a task and its report read as one
+     system. Light is complete on bare :root, dark redefines only. */
+  :root {
+    color-scheme: light dark;
+
+    --ink: #14181d;
+    --ink-soft: #454f5c;
+    --ink-faint: #6d7783;
+    --paper: #f5f6f4;
+    --surface: #ffffff;
+    --surface-sunken: #eceef0;
+    --rule: #d9dde2;
+
+    --accent: #2f4a7a;
+    --accent-soft: #e6ebf4;
+
+    --pass: #1c7d54;
+    --pass-soft: #e2f1ea;
+    --fail: #a8322d;
+    --fail-soft: #f8e6e5;
+    --warn: #9a6b12;
+    --warn-soft: #f7eedb;
+    --idle: #6d7783;
+    --idle-soft: #e9ebee;
+
+    --step--1: 0.78rem;
+    --step-0: 0.94rem;
+    --step-1: 1.14rem;
+    --step-2: 1.5rem;
+
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e7eaee;
+      --ink-soft: #a7b0bb;
+      --ink-faint: #7b8592;
+      --paper: #11141a;
+      --surface: #181c23;
+      --surface-sunken: #131720;
+      --rule: #2a303a;
+      --accent: #8ba6dd;
+      --accent-soft: #1d2634;
+      --pass: #5cc394;
+      --pass-soft: #14291f;
+      --fail: #e88b85;
+      --fail-soft: #2a1a19;
+      --warn: #d8a94a;
+      --warn-soft: #2a2114;
+      --idle: #8891a0;
+      --idle-soft: #1e232b;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: var(--step-0);
+    line-height: 1.5;
+  }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: baseline;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--rule);
+    background: var(--surface);
+  }
+
+  header h1 { font-size: var(--step-1); margin: 0; font-weight: 600; }
+  header .counts { color: var(--ink-faint); font-size: var(--step--1); }
+
+  main {
+    display: grid;
+    grid-template-columns: minmax(15rem, 22rem) 1fr;
+    gap: 1px;
+    background: var(--rule);
+    min-height: calc(100vh - 3.5rem);
+  }
+
+  @media (max-width: 52rem) {
+    main { grid-template-columns: 1fr; }
+    #detail { min-height: 60vh; }
+  }
+
+  #list, #detail { background: var(--paper); }
+  #list { padding: 0.5rem; overflow-y: auto; max-height: calc(100vh - 3.5rem); }
+  #detail { padding: 1.25rem 1.5rem; }
+
+  .task {
+    display: block;
+    width: 100%;
+    text-align: left;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    padding: 0.55rem 0.65rem;
+    cursor: pointer;
+  }
+
+  .task:hover { background: var(--surface); }
+  .task[aria-current="true"] { background: var(--surface); border-color: var(--rule); }
+  .task .row { display: flex; gap: 0.5rem; align-items: baseline; }
+  .task .id { font-family: var(--mono); font-size: var(--step--1); color: var(--ink-faint); }
+  .task .title { font-weight: 500; }
+  .task .ids { color: var(--ink-faint); font-size: var(--step--1); font-family: var(--mono); }
+
+  .dot {
+    width: 0.5rem; height: 0.5rem; border-radius: 50%;
+    display: inline-block; flex: none; margin-top: 0.42rem;
+  }
+
+  .dot.done { background: var(--pass); }
+  .dot.doing { background: var(--warn); }
+  .dot.blocked { background: var(--fail); }
+  .dot.open { background: var(--idle); }
+
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: var(--step--1);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    margin: 0 0.25rem 0.25rem 0;
+  }
+
+  .chip.done { background: var(--pass-soft); color: var(--pass); }
+  .chip.doing { background: var(--warn-soft); color: var(--warn); }
+  .chip.blocked { background: var(--fail-soft); color: var(--fail); }
+  .chip.open { background: var(--idle-soft); color: var(--idle); }
+
+  #detail h2 { font-size: var(--step-2); margin: 0 0 0.25rem; font-weight: 600; }
+  #detail .meta { color: var(--ink-faint); font-size: var(--step--1); margin-bottom: 1rem; }
+  #detail section { margin-bottom: 1.25rem; }
+  #detail h3 {
+    font-size: var(--step--1);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ink-faint);
+    margin: 0 0 0.35rem;
+    font-weight: 600;
+  }
+
+  .side {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    padding: 0.65rem 0.8rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .side b { font-weight: 600; }
+
+  .report {
+    border: 1px solid var(--rule);
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--surface);
+  }
+
+  .report a { display: block; padding: 0.65rem 0.8rem; color: var(--accent); }
+  .report iframe { width: 100%; height: 70vh; border: 0; border-top: 1px solid var(--rule); background: var(--surface); }
+
+  table.cases {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--step--1);
+  }
+
+  table.cases th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 0 0.6rem 0.35rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+
+  table.cases td {
+    padding: 0.4rem 0.6rem 0.4rem 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+
+  table.cases td.id, table.cases td.proves, table.cases td.level {
+    font-family: var(--mono);
+    color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  .approval {
+    margin: 0.5rem 0 0;
+    color: var(--ink-faint);
+    font-size: var(--step--1);
+  }
+
+  .empty {
+    border: 1px dashed var(--rule);
+    border-radius: 8px;
+    padding: 1rem 1.15rem;
+    color: var(--ink-soft);
+    background: var(--surface);
+  }
+
+  .empty code { font-family: var(--mono); font-size: var(--step--1); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="project">Board</h1>
+  <span class="counts" id="counts"></span>
+</header>
+
+<main>
+  <nav id="list" aria-label="Tasks"></nav>
+  <article id="detail"></article>
+</main>
+
+<script type="application/json" id="board">
+{
+  "schema": "turystack.board/1",
+  "project": "{{PROJECT}}",
+  "tasks": []
+}
+</script>
+
+<script>
+  // The payload is a render of tasks.json. This page reads it and never writes
+  // it: a status changed here would be a status nothing recorded (SPC-16).
+  const board = JSON.parse(document.getElementById('board').textContent)
+  const list = document.getElementById('list')
+  const detail = document.getElementById('detail')
+  const tasks = Array.isArray(board.tasks) ? board.tasks : []
+
+  const STATUS = ['open', 'doing', 'blocked', 'done']
+
+  function statusOf(task) {
+    return STATUS.includes(task.status) ? task.status : 'open'
+  }
+
+  function text(value) {
+    return String(value ?? '')
+  }
+
+  document.getElementById('project').textContent = `${text(board.project) || 'Project'} — board`
+  document.getElementById('counts').textContent = tasks.length === 0
+    ? 'no tasks yet'
+    : STATUS
+        .map((status) => `${tasks.filter((task) => statusOf(task) === status).length} ${status}`)
+        .join(' · ')
+
+  function renderList() {
+    if (tasks.length === 0) {
+      list.innerHTML = ''
+      return
+    }
+
+    for (const [index, task] of tasks.entries()) {
+      const button = document.createElement('button')
+      button.className = 'task'
+      button.type = 'button'
+      button.dataset.index = String(index)
+      button.innerHTML = `
+        <span class="row">
+          <span class="dot ${statusOf(task)}"></span>
+          <span class="id">${text(task.id)}</span>
+          <span class="title">${text(task.title)}</span>
+        </span>
+        <span class="ids">${(task.covers ?? []).join(' · ')}</span>`
+      button.addEventListener('click', () => select(index))
+      list.append(button)
+    }
+  }
+
+  function renderDetail(task) {
+    const status = statusOf(task)
+    const covers = task.covers ?? []
+    const cases = task.cases ?? []
+
+    detail.innerHTML = `
+      <h2>${text(task.title)}</h2>
+      <p class="meta">
+        <span class="chip ${status}">${status}</span>
+        ${text(task.id)}${task.surface ? ` · ${text(task.surface)}` : ''}${task.system ? ` · ${text(task.system)}` : ''}
+      </p>
+
+      <section>
+        <h3>Covers</h3>
+        ${covers.length > 0
+          ? covers.map((id) => `<span class="chip">${text(id)}</span>`).join('')
+          : '<p class="empty">This task names no id. A task that satisfies nothing the spec declares is not delivery (SPC-17).</p>'}
+      </section>
+
+      <section>
+        <h3>Sides</h3>
+        ${task.backend ? `<p class="side"><b>Backend.</b> ${text(task.backend)}</p>` : ''}
+        ${task.frontend ? `<p class="side"><b>Frontend.</b> ${text(task.frontend)}</p>` : ''}
+        ${!task.backend && !task.frontend ? '<p class="empty">Neither side is described. A title is not a task.</p>' : ''}
+        ${task.blockedBy ? `<p class="side"><b>Blocked by.</b> ${text(task.blockedBy)}</p>` : ''}
+      </section>
+
+      <section>
+        <h3>Test cases</h3>
+        ${cases.length > 0
+          ? `<table class="cases">
+               <thead>
+                 <tr><th>Case</th><th>Proves</th><th>Level</th><th>What is checked</th><th>State</th></tr>
+               </thead>
+               <tbody>
+                 ${cases.map((entry) => `
+                   <tr>
+                     <td class="id">${text(entry.id)}</td>
+                     <td class="proves">${text(entry.proves) || '—'}</td>
+                     <td class="level">${text(entry.level) || '—'}</td>
+                     <td>${text(entry.text)}${entry.addedBy ? ` <em>(added by ${text(entry.addedBy)})</em>` : ''}</td>
+                     <td><span class="chip ${entry.state === 'approved' ? 'done' : 'doing'}">${text(entry.state) || 'proposed'}</span></td>
+                   </tr>`).join('')}
+               </tbody>
+             </table>
+             <p class="approval">${task.casesApprovedBy
+               ? `Approved by ${text(task.casesApprovedBy)}${task.casesApprovedAt ? ` on ${text(task.casesApprovedAt)}` : ''}. Every approved case is delivered as a test that runs (SPC-22).`
+               : 'Not approved yet. Read them, correct them, add the cases only you know about — implementation does not start until you have (SPC-22).'}</p>`
+          : '<p class="empty">No cases. What gets tested would be decided during implementation, by whoever is typing (SPC-21).</p>'}
+      </section>
+
+      <section>
+        <h3>Delivery report</h3>
+        ${task.report
+          ? `<div class="report">
+               <a href="${text(task.report)}" target="_blank" rel="noreferrer">${text(task.report)}</a>
+               <iframe src="${text(task.report)}" title="Delivery report for ${text(task.id)}" loading="lazy"></iframe>
+             </div>`
+          : `<p class="empty">No report attached${status === 'done' ? ' — and this task says <code>done</code>. A status with no report is a claim (SPC-18).' : ' yet.'}</p>`}
+      </section>`
+  }
+
+  function select(index) {
+    for (const button of list.querySelectorAll('.task')) {
+      button.setAttribute('aria-current', String(button.dataset.index === String(index)))
+    }
+
+    renderDetail(tasks[index])
+  }
+
+  renderList()
+
+  if (tasks.length === 0) {
+    detail.innerHTML = `
+      <h2>No tasks yet</h2>
+      <p class="meta">This board is the render of <code>tasks.json</code>, and it is empty.</p>
+      <p class="empty">
+        Derive it from the filled sections of this skill — that step is
+        <code>turystack-harness</code> › <code>05-board.md</code>. Every task names the ids it
+        satisfies, and every id this skill declares is named by some task.
+      </p>`
+  } else {
+    select(0)
+  }
+</script>
+</body>
+</html>

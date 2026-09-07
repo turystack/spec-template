@@ -1,0 +1,5 @@
+{
+  "schema": "turystack.board/1",
+  "project": "{{PROJECT}}",
+  "tasks": []
+}

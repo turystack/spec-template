@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>T-1 — delivery report (example)</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --ink: #14181d;
+    --ink-faint: #6d7783;
+    --paper: #f5f6f4;
+    --surface: #ffffff;
+    --rule: #d9dde2;
+    --pass: #1c7d54;
+    --pass-soft: #e2f1ea;
+    --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #e7eaee;
+      --ink-faint: #7b8592;
+      --paper: #11141a;
+      --surface: #181c23;
+      --rule: #2a303a;
+      --pass: #5cc394;
+      --pass-soft: #14291f;
+    }
+  }
+
+  body {
+    margin: 0;
+    padding: 1.5rem;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 0.94rem;
+    line-height: 1.5;
+  }
+
+  h1 { font-size: 1.14rem; margin: 0 0 0.25rem; }
+  p.meta { color: var(--ink-faint); font-size: 0.78rem; margin: 0 0 1rem; }
+
+  .chip {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+    background: var(--pass-soft);
+    color: var(--pass);
+  }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.78rem; background: var(--surface); }
+  th { text-align: left; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.06em; }
+  th, td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--rule); vertical-align: top; }
+  td.id { font-family: var(--mono); color: var(--ink-faint); white-space: nowrap; }
+
+  .note {
+    margin-top: 1.25rem;
+    border: 1px dashed var(--rule);
+    border-radius: 8px;
+    padding: 0.8rem 1rem;
+    color: var(--ink-faint);
+    font-size: 0.78rem;
+    background: var(--surface);
+  }
+
+  code { font-family: var(--mono); }
+</style>
+</head>
+<body>
+
+<h1>T-1 · Cancel an order — backend <span class="chip">pass</span></h1>
+<p class="meta">acme · feat/cancel-order @ 9f3c1ab · 8 rungs green · coverage 96.2% on the lines this task changed</p>
+
+<table>
+  <thead>
+    <tr><th>Case</th><th>Proves</th><th>Test</th><th>State</th></tr>
+  </thead>
+  <tbody>
+    <tr><td class="id">TC-1</td><td class="id">AC-1</td><td>cancel-order.test.ts › cancels a paid order</td><td>pass</td></tr>
+    <tr><td class="id">TC-2</td><td class="id">AC-2</td><td>cancel-order.test.ts › refuses a cancelled order</td><td>pass</td></tr>
+    <tr><td class="id">TC-3</td><td class="id">AC-1</td><td>cancel-order.e2e.test.ts › returns the released shipments</td><td>pass</td></tr>
+    <tr><td class="id">TC-4</td><td class="id">—</td><td>cancel-order.int.test.ts › two cancellations race</td><td>pass</td></tr>
+  </tbody>
+</table>
+
+<p class="note">
+  <strong>This page is an example.</strong> A real delivery report is emitted by
+  <code>turystack-proof report</code> as <code>gate-report.json</code> plus its page, and it carries the
+  full ladder, the law coverage, the contract delta and the screens beside their designs. This stub
+  exists so the example board has something to open at the path a finished task points at.
+</p>
+
+</body>
+</html>

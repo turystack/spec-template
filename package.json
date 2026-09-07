@@ -1,0 +1,20 @@
+{
+	"name": "@turystack/spec-template",
+	"description": "Template for a project's own spec skill — definition, domains, states and transitions, cross-domain rules, flows and glossary. Materialized once per project as <project>-spec. Installed into .claude/skills and/or .codex/skills via the turystack CLI.",
+	"private": false,
+	"version": "1.0.0",
+	"sideEffects": false,
+	"publishConfig": {
+		"access": "public"
+	},
+	"engines": {
+		"node": ">=20"
+	},
+	"files": [
+		"*.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/turystack/spec-template.git"
+	}
+}

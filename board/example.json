@@ -1,0 +1,118 @@
+{
+  "schema": "turystack.board/1",
+  "project": "acme",
+  "tasks": [
+    {
+      "id": "T-1",
+      "title": "Cancel an order — backend",
+      "surface": null,
+      "system": null,
+      "covers": ["AC-1", "AC-2"],
+      "backend": "the transition and its guard, the endpoint, the released shipments",
+      "frontend": null,
+      "status": "done",
+      "report": "reports/T-1/report.html",
+      "blockedBy": null,
+      "cases": [
+        { "id": "TC-1", "proves": "AC-1", "level": "unit", "text": "a paid order becomes cancelled and releases its shipments", "state": "approved" },
+        { "id": "TC-2", "proves": "AC-2", "level": "unit", "text": "cancelling an already cancelled order changes nothing and says why", "state": "approved" },
+        { "id": "TC-3", "proves": "AC-1", "level": "e2e", "text": "the endpoint answers with the shipments it released", "state": "approved" },
+        { "id": "TC-4", "proves": null, "level": "integration", "text": "two cancellations racing leave one cancellation and one refusal", "state": "approved", "addedBy": "joaogabriel" }
+      ],
+      "casesApprovedBy": "joaogabriel",
+      "casesApprovedAt": "2026-08-20"
+    },
+    {
+      "id": "T-2",
+      "title": "Cancel an order — orders table",
+      "surface": "Orders table",
+      "system": "internal",
+      "covers": ["AC-3", "UX-DR-1", "UX-DR-2"],
+      "backend": null,
+      "frontend": "the row action, its permission gate, the confirm with the shipment count",
+      "status": "doing",
+      "report": null,
+      "blockedBy": null,
+      "cases": [
+        { "id": "TC-5", "proves": "AC-3", "level": "component", "text": "without the permission the action stays visible, inert, with its reason", "state": "approved" },
+        { "id": "TC-6", "proves": "UX-DR-1", "level": "component", "text": "the action sits in the row, not behind a kebab", "state": "approved" },
+        { "id": "TC-7", "proves": "UX-DR-2", "level": "component", "text": "the denial reads inline beside the action, never as a toast", "state": "approved" },
+        { "id": "TC-8", "proves": null, "level": "e2e", "text": "an operator of another organization gets the denied surface, not an empty table", "state": "approved", "addedBy": "joaogabriel" }
+      ],
+      "casesApprovedBy": "joaogabriel",
+      "casesApprovedAt": "2026-08-21"
+    },
+    {
+      "id": "T-3",
+      "title": "Refund window",
+      "surface": null,
+      "system": null,
+      "covers": ["RULE-4"],
+      "backend": "the window read from an injected instant, in the organization's timezone",
+      "frontend": null,
+      "status": "open",
+      "report": null,
+      "blockedBy": null,
+      "cases": [
+        { "id": "TC-9", "proves": "RULE-4", "level": "unit", "text": "a cancellation 71h after payment refunds in full", "state": "proposed" },
+        { "id": "TC-10", "proves": "RULE-4", "level": "unit", "text": "a cancellation 73h after payment is allowed and refunds nothing", "state": "proposed" },
+        { "id": "TC-11", "proves": "RULE-4", "level": "unit", "text": "the window is measured against the instant the operation receives, never the runtime clock", "state": "proposed" }
+      ],
+      "casesApprovedBy": null,
+      "casesApprovedAt": null
+    },
+    {
+      "id": "T-4",
+      "title": "order.cancelled — refund handler",
+      "surface": null,
+      "system": null,
+      "covers": ["EVN-3"],
+      "backend": "the handler, its idempotency key, and what happens when the provider is unreachable",
+      "frontend": null,
+      "status": "open",
+      "report": null,
+      "blockedBy": null,
+      "cases": [
+        { "id": "TC-12", "proves": "EVN-3", "level": "integration", "text": "a redelivered order.cancelled requests one refund, not two", "state": "proposed" },
+        { "id": "TC-13", "proves": "EVN-3", "level": "integration", "text": "a failing provider leaves the order cancelled and raises the alert", "state": "proposed" }
+      ],
+      "casesApprovedBy": null,
+      "casesApprovedAt": null
+    },
+    {
+      "id": "T-5",
+      "title": "Delivered order refuses cancellation",
+      "surface": "Orders table",
+      "system": "internal",
+      "covers": ["AC-4"],
+      "backend": "the transition table has no delivered → cancelled",
+      "frontend": "the action is inert, and the message names return",
+      "status": "blocked",
+      "report": null,
+      "blockedBy": "AC-4 has no denial copy in acme-uiux › 03-copy.md",
+      "cases": [
+        { "id": "TC-14", "proves": "AC-4", "level": "unit", "text": "delivered → cancelled is refused by the transition guard", "state": "proposed" }
+      ],
+      "casesApprovedBy": null,
+      "casesApprovedAt": null
+    },
+    {
+      "id": "T-6",
+      "title": "Reservation sweep",
+      "surface": null,
+      "system": null,
+      "covers": ["JOB-1"],
+      "backend": "the schedule, what it may touch, and what it does after three failures",
+      "frontend": null,
+      "status": "open",
+      "report": null,
+      "blockedBy": null,
+      "cases": [
+        { "id": "TC-15", "proves": "JOB-1", "level": "integration", "text": "reservations older than 24h are released and the rest are untouched", "state": "proposed" },
+        { "id": "TC-16", "proves": "JOB-1", "level": "integration", "text": "an order an operator is editing is not swept mid-edit", "state": "proposed", "addedBy": "joaogabriel" }
+      ],
+      "casesApprovedBy": null,
+      "casesApprovedAt": null
+    }
+  ]
+}
